@@ -1,5 +1,5 @@
 master:
-  image: gettyimages/spark
+  build: .
   command: bin/spark-class org.apache.spark.deploy.master.Master -h master
   hostname: master
   environment:
@@ -19,13 +19,13 @@ master:
     - 4040:4040
     - 6066:6066
     - 7077:7077
-    - 8080:8080
+    - 8082:8080
   volumes:
     - ./conf/master:/conf
     - ./data:/tmp/data
 
 worker:
-  image: gettyimages/spark
+  build: .
   command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://master:7077
   hostname: worker
   environment:
@@ -49,3 +49,18 @@ worker:
   volumes:
     - ./conf/worker:/conf
     - ./data:/tmp/data
+
+
+test:
+  build: .
+  hostname: test
+  environment:
+    MASTER: spark://master:7077
+    SPARK_CONF_DIR: /conf
+    SPARK_PUBLIC_DNS: localhost
+  links:
+    - master
+  volumes:
+    - ./data:/tmp/data
+    - ./project:/usr/project
+  entrypoint: /bin/sh -c "while true; do echo hello world; sleep 1; done"
